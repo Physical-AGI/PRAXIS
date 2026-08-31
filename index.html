@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>PRAXIS · A Capability-Factored Dataset and Benchmark for Robot Learning</title>
+
+  <meta name="title" content="PRAXIS · A Capability-Factored Dataset and Benchmark for Robot Learning">
+  <meta name="description" content="PRAXIS evaluates the cognitive capabilities of embodied agents rather than task completion: counterfactually paired episodes, mid-episode physical interventions, a first-class world-model track, and a capability vector aggregated by geometric mean. 20 task families, 1,200 paired episodes, 11 scored axes.">
+  <meta name="keywords" content="robot learning benchmark, physical AI, capability-factored evaluation, counterfactual pairing, world model benchmark, vision-language-action, embodied AI, MuJoCo, conformal, PRAXIS">
+  <meta name="robots" content="index, follow">
+  <meta name="author" content="Md Selim Sarowar">
+  <link rel="canonical" href="https://physical-agi.github.io/PRAXIS/">
+
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="PRAXIS · A Capability-Factored Dataset and Benchmark for Robot Learning">
+  <meta property="og:description" content="Measure the capability, not the success rate. Paired counterfactuals, in-situ interventions, and a capability vector that punishes imbalance.">
+  <meta property="og:url" content="https://physical-agi.github.io/PRAXIS/">
+  <meta property="og:image" content="https://physical-agi.github.io/PRAXIS/static/images/robot.png">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="PRAXIS · A Capability-Factored Benchmark for Robot Learning">
+  <meta name="twitter:description" content="Spatial and planning are exactly zero for every non-oracle baseline. That is the standing open challenge.">
+  <meta name="twitter:image" content="https://physical-agi.github.io/PRAXIS/static/images/robot.png">
+
+  <meta name="citation_title" content="A Capability-Factored Dataset and Benchmark for Robot Learning">
+  <meta name="citation_author" content="Sarowar, Md Selim">
+  <meta name="citation_author" content="Kim, Sungho">
+  <meta name="citation_publication_date" content="2027">
+
+  <meta name="theme-color" content="#0f766e">
+
+  <link rel="icon" type="image/png" href="static/images/robot.png">
+  <link rel="apple-touch-icon" href="static/images/robot.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="static/css/main.css">
+  <link rel="preload" href="static/css/fontawesome.all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="static/css/fontawesome.all.min.css"></noscript>
+
+  <script defer src="static/js/fontawesome.all.min.js"></script>
+  <script defer src="static/js/main.js"></script>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "ScholarlyArticle",
+    "headline": "A Capability-Factored Dataset and Benchmark for Robot Learning",
+    "author": [
+      { "@type": "Person", "name": "Md Selim Sarowar" },
+      { "@type": "Person", "name": "Sungho Kim" }
+    ],
+    "description": "PRAXIS: Physical Reasoning, Adaptation, and eXecution In Situ. A standalone benchmark for General Physical Intelligence that evaluates cognitive capabilities of embodied agents rather than task completion.",
+    "abstract": "Existing physical AI benchmarks report a single confounded success rate on memorizable episodes. PRAXIS evaluates differently: counterfactually paired episodes, mid-episode physical interventions, a first-class world-model track, and a capability vector over eleven axes aggregated by geometric mean so imbalance is punished.",
+    "keywords": ["robot learning", "benchmark", "capability-factored evaluation", "world models", "embodied AI"],
+    "isAccessibleForFree": true,
+    "codeRepository": "https://github.com/Physical-AGI/PRAXIS",
+    "license": "https://www.apache.org/licenses/LICENSE-2.0"
+  }
+  </script>
+</head>
+<body>
+
+<a class="skip" href="#main">Skip to content</a>
+
+<nav class="nav" id="nav" aria-label="Main navigation">
+  <div class="nav__inner">
+    <a class="nav__brand" href="#top">
+      <span class="nav__mark">PX</span>
+      <span>PRAXIS <em>· benchmark</em></span>
+    </a>
+
+    <div class="nav__links" id="nav-links">
+      <a href="#abstract">Abstract</a>
+      <a href="#design">Design</a>
+      <a href="#vector">Capability vector</a>
+      <a href="#scoring">Scoring</a>
+      <a href="#families">Families</a>
+      <a href="#results">Results</a>
+      <a href="#evidence">Evidence</a>
+      <a href="#limits">Limits</a>
+      <a href="#bibtex">BibTeX</a>
+    </div>
+
+    <div class="nav__tools">
+      <button class="icon-btn" id="theme-toggle" type="button" aria-label="Toggle theme">
+        <i class="fas fa-moon" aria-hidden="true"></i>
+      </button>
+      <button class="icon-btn nav__burger" id="nav-burger" type="button"
+              aria-label="Toggle navigation" aria-expanded="false" aria-controls="nav-links">
+        <i class="fas fa-bars" aria-hidden="true"></i>
+      </button>
+    </div>
+  </div>
+  <div class="progress" id="progress"></div>
+</nav>
+
+<main id="main">
+  <span id="top"></span>
+
+  <header class="hero">
+    <div class="wrap hero__inner">
+      <div class="eyebrow"><i class="fas fa-flask-vial" aria-hidden="true"></i> In preparation · IROS 2027</div>
+
+      <h1>A Capability-Factored Dataset and Benchmark for Robot Learning</h1>
+
+      <p class="hero__lead">
+        <strong>PRAXIS</strong>: Physical Reasoning, Adaptation, and eXecution In Situ. A standalone benchmark for
+        General Physical Intelligence that measures <em>what an embodied agent can do</em>, not how often it
+        happens to finish. Counterfactually paired episodes, mid-episode physical interventions, a first-class
+        world-model track, and a capability vector aggregated so that imbalance is punished.
+      </p>
+
+      <div class="hero__chips">
+        <span class="chip">Md Selim Sarowar</span>
+        <span class="chip">Sungho Kim<sup>&dagger;</sup></span>
+        <span class="chip">Yeungnam University</span>
+        <span class="chip">Apache-2.0</span>
+      </div>
+
+      <div class="btn-row">
+        <span class="btn" style="opacity:0.55;cursor:default"><i class="fas fa-file-pdf" aria-hidden="true"></i> Paper soon</span>
+        <a class="btn btn--primary" href="https://github.com/Physical-AGI/PRAXIS" target="_blank" rel="noopener"><i class="fab fa-github" aria-hidden="true"></i> Code</a>
+        <a class="btn" href="#results"><i class="fas fa-ranking-star" aria-hidden="true"></i> Leaderboard</a>
+        <a class="btn" href="#bibtex"><i class="fas fa-quote-left" aria-hidden="true"></i> Cite</a>
+      </div>
+
+      <div class="stats">
+        <div class="stat reveal">
+          <div class="stat__val" data-count="20">0</div>
+          <div class="stat__label">Task families across five difficulty tiers</div>
+        </div>
+        <div class="stat reveal">
+          <div class="stat__val" data-count="1200">0</div>
+          <div class="stat__label">Paired episodes per agent on the reference suite</div>
+        </div>
+        <div class="stat reveal">
+          <div class="stat__val" data-count="11">0</div>
+          <div class="stat__label">Scored capability axes, six of them pillars</div>
+        </div>
+        <div class="stat reveal">
+          <div class="stat__val" data-count="0.170" data-decimals="3">0.000</div>
+          <div class="stat__label">Best non-privileged score, against an oracle at 0.992</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= Abstract ================= -->
+  <section class="section section--soft" id="abstract">
+    <div class="wrap narrow">
+      <div class="section__head reveal">
+        <div class="section__kicker">Abstract</div>
+        <h2>A success rate is a confounded scalar</h2>
+      </div>
+
+      <div class="reveal" style="font-size:1.02rem;color:var(--ink-2);line-height:1.75">
+        <p>
+          Current physical AI benchmarks report a single success rate on fixed, memorizable episodes: a scalar that
+          confounds perception, grounding, planning and control, and that collapses under trivial perturbation. It
+          cannot say whether an agent failed because it could not see the object, could not parse the instruction,
+          could not plan the sequence, or could not close the gripper, and it cannot say anything at all about the
+          world model inside a model-based agent.
+        </p>
+        <p>
+          <strong>PRAXIS evaluates differently.</strong> Every evaluation seed generates a base episode and variants
+          that differ by exactly one controlled factor, so capabilities are measured as paired deltas the way a
+          controlled experiment measures cause. The simulator injects scripted events mid-episode: objects are
+          displaced, actuation drops out, goal regions move and are re-announced in language. An open-loop trajectory
+          replayer passes the base episode and fails its intervened twin, and that difference is the robustness gap.
+          A first-class world-model track scores counterfactual state prediction and plan ranking directly, the
+          questions a planner actually poses, with the property that copy-last-frame shortcuts provably score zero on
+          ranking.
+        </p>
+        <p>
+          The result is a <strong>capability vector rather than a scalar</strong>: eleven axes, each with a Wilson
+          interval, aggregated by geometric mean so that an agent cannot buy a headline number by being excellent at
+          control and blind everywhere else. Unseen-object generalization is an enforced invariant rather than a
+          curation claim, because the procedural object pack samples shape, texture, size, mass, friction and colour
+          from train and eval ranges that are disjoint per attribute, and zero asset files ship. Across 20 families
+          and 1,200 paired episodes per agent, every non-privileged baseline we measured scores
+          <strong>exactly zero on spatial reasoning and on planning</strong> while reaching 0.69 to 0.83 on control.
+          That gap, invisible to a success rate, is the challenge the instrument exists to surface.
+        </p>
+      </div>
+
+      <div class="callout callout--brand">
+        <strong>PRAXIS is explicitly not another manipulation benchmark.</strong> Manipulation is the substrate,
+        because contact with the world is where physical intelligence is falsifiable, but the object of measurement
+        is the cognitive capability, and every task family exists only to isolate one.
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= Design ================= -->
+  <section class="section" id="design">
+    <div class="wrap">
+      <div class="section__head reveal">
+        <div class="section__kicker">Design</div>
+        <h2>Four commitments</h2>
+        <p class="section__sub">
+          The survey of fifteen existing benchmarks reduces to one sentence: they report a confounded scalar on
+          memorizable instances with no perturbations, no statistics, no memory demands, and no way to evaluate the
+          world models inside modern agents. These are the four answers.
+        </p>
+      </div>
+
+      <div class="pipe reveal">
+        <div class="pipe__rail" id="pipe-rail" role="tablist" aria-label="Design commitments"></div>
+        <div class="pipe__panel" id="pipe-panel" role="tabpanel"></div>
+      </div>
+
+      <div class="pair reveal" style="margin-top:2rem">
+        <div class="pair__side">
+          <span class="pair__tag is-base">Base episode</span>
+          <svg viewBox="0 0 220 130" role="img" aria-label="A base episode: the effector moves the object to the goal region along an uninterrupted path">
+            <rect x="1" y="1" width="218" height="128" rx="10" fill="none" stroke="var(--line)"/>
+            <circle cx="176" cy="42" r="20" fill="none" stroke="var(--brand)" stroke-width="2" stroke-dasharray="4 3"/>
+            <text x="176" y="76" text-anchor="middle" font-size="9" fill="var(--ink-3)">goal</text>
+            <path d="M38 96 C 80 96, 130 60, 172 44" fill="none" stroke="var(--brand)" stroke-width="2.2" stroke-linecap="round"/>
+            <rect x="30" y="88" width="16" height="16" rx="3" fill="var(--brand)"/>
+            <circle cx="172" cy="44" r="6" fill="var(--brand)"/>
+          </svg>
+          <p>The agent completes the task. Success: <strong>yes</strong>.</p>
+        </div>
+
+        <div class="pair__delta">
+          <b>&Delta;</b>
+          <span>the paired difference<br>is the measurement</span>
+        </div>
+
+        <div class="pair__side">
+          <span class="pair__tag is-twin">Intervened twin</span>
+          <svg viewBox="0 0 220 130" role="img" aria-label="The intervened twin: the object is knocked away mid-episode and an open-loop replayer continues to the original goal and misses">
+            <rect x="1" y="1" width="218" height="128" rx="10" fill="none" stroke="var(--line)"/>
+            <circle cx="176" cy="42" r="20" fill="none" stroke="var(--accent)" stroke-width="2" stroke-dasharray="4 3"/>
+            <text x="176" y="76" text-anchor="middle" font-size="9" fill="var(--ink-3)">goal</text>
+            <path d="M38 96 C 68 92, 92 78, 108 70" fill="none" stroke="var(--accent)" stroke-width="2.2" stroke-linecap="round"/>
+            <path d="M108 70 C 130 62, 152 50, 172 44" fill="none" stroke="var(--ink-3)" stroke-width="1.8" stroke-dasharray="4 4" stroke-linecap="round"/>
+            <path d="M112 66 L 150 100" stroke="var(--accent)" stroke-width="1.6" stroke-dasharray="3 3"/>
+            <rect x="30" y="88" width="16" height="16" rx="3" fill="var(--accent)"/>
+            <circle cx="152" cy="102" r="6" fill="var(--accent)"/>
+            <text x="163" y="106" font-size="9" fill="var(--accent)">displaced</text>
+          </svg>
+          <p>Same seed, one factor changed. An open-loop replayer <strong>misses</strong>.</p>
+        </div>
+      </div>
+
+      <p class="table-note" style="text-align:center;max-width:720px;margin-left:auto;margin-right:auto">
+        Scoring the pair rather than the episode cancels instance difficulty, so a family that happens to draw an
+        easy layout cannot inflate an axis. Recovery is scored on the intervened twins <strong>only</strong>, so it
+        cannot be earned by being good at the undisturbed task.
+      </p>
+    </div>
+  </section>
+
+  <!-- ================= Capability vector ================= -->
+  <section class="section section--soft" id="vector">
+    <div class="wrap">
+      <div class="section__head reveal">
+        <div class="section__kicker">The measurement</div>
+        <h2>What a capability vector looks like</h2>
+        <p class="section__sub">
+          Measured on the public <code>full_v1</code> suite: 20 families, 50 paired seeds each, 1,200 episodes per
+          agent. Toggle agents to overlay their shapes. The privileged oracle is drawn dashed and is never ranked
+          against learned policies.
+        </p>
+      </div>
+
+      <div class="radar reveal">
+        <div class="radar__plot" id="radar-plot"></div>
+        <div class="radar__side" id="radar-agents"></div>
+      </div>
+
+      <div class="callout" id="radar-note"></div>
+
+      <p class="table-note">
+        <strong>Read the shape, not the area.</strong> <code>vision</code> and <code>bc</code> differ by 0.014 on the
+        headline score and are entirely different agents: <code>vision</code> reaches 0.620 on memory where
+        <code>bc</code> reaches 0.060, and <code>bc</code> is the only baseline with a non-zero planning axis at all.
+        A leaderboard that reported one number would call them equivalent.
+      </p>
+    </div>
+  </section>
+
+  <!-- ================= Scoring ================= -->
+  <section class="section" id="scoring">
+    <div class="wrap">
+      <div class="section__head reveal">
+        <div class="section__kicker">Aggregation</div>
+        <h2>Why the headline score is a product</h2>
+        <p class="section__sub">
+          The PRAXIS score is the geometric mean over the axes. Drag the planning axis toward zero and watch the two
+          aggregates separate.
+        </p>
+      </div>
+
+      <div class="mean-lab reveal">
+        <div>
+          <div class="mean-bars" id="mean-bars"></div>
+          <div class="slider-row">
+            <label for="mean-slider">Planning axis <b id="mean-val">0.80</b></label>
+            <input type="range" id="mean-slider" min="0" max="100" step="1" value="80"
+                   aria-label="Planning axis value">
+          </div>
+        </div>
+
+        <div>
+          <div class="mean-out">
+            <div class="mean-card">
+              <em>Arithmetic mean</em>
+              <b id="mean-arith">0.000</b>
+            </div>
+            <div class="mean-card is-key">
+              <em>Geometric mean</em>
+              <b id="mean-geo">0.000</b>
+            </div>
+          </div>
+          <p style="font-size:0.9rem;color:var(--ink-2);margin:0" id="mean-verdict"></p>
+        </div>
+      </div>
+
+      <p class="table-note">
+        This is a synthetic profile chosen to make the arithmetic visible; the axis values are illustrative and the
+        aggregation is the one the benchmark ships. Every axis also carries a Wilson interval, and ranking claims
+        between two submissions require a paired permutation test, not a difference of point estimates.
+      </p>
+    </div>
+  </section>
+
+  <!-- ================= Families ================= -->
+  <section class="section section--soft" id="families">
+    <div class="wrap">
+      <div class="section__head reveal">
+        <div class="section__kicker">Task taxonomy</div>
+        <h2>Twenty families, five tiers</h2>
+        <p class="section__sub">
+          Three orthogonal coordinates: the capability axes a family probes, the tier of difficulty, and the base
+          versus paired-counterfactual variant structure. Filter by either coordinate.
+        </p>
+      </div>
+
+      <div class="pub-tools reveal">
+        <div class="filters">
+          <button class="pill is-active" data-tier="all" type="button">All tiers</button>
+          <button class="pill" data-tier="L0" type="button">L0</button>
+          <button class="pill" data-tier="L1" type="button">L1</button>
+          <button class="pill" data-tier="L2" type="button">L2</button>
+          <button class="pill" data-tier="L3" type="button">L3</button>
+          <button class="pill" data-tier="L4" type="button">L4</button>
+        </div>
+        <label class="sr-only" for="fam-axis">Filter by capability axis</label>
+        <select id="fam-axis" class="pill" style="padding-right:1.6rem"></select>
+        <span class="pub-count" id="fam-count"></span>
+      </div>
+
+      <p class="table-note" id="fam-note" style="margin-top:0;margin-bottom:1.3rem"></p>
+
+      <div class="fam-grid" id="fam-grid"></div>
+
+      <div class="callout">
+        <strong>Family design is normative, not editorial.</strong> A family declares exactly the axes it isolates,
+        and failure on it must implicate those axes and no others. Paired variants differ from base by exactly one
+        controlled factor. Generators are pure functions of the seed. The privileged oracle must solve every family
+        at 95% or better, enforced in CI: an unsolvable family is a bug, not a challenge. Family ids are permanent,
+        and a semantic change creates a versioned successor rather than silently redefining a number.
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= Results ================= -->
+  <section class="section" id="results">
+    <div class="wrap">
+      <div class="section__head reveal">
+        <div class="section__kicker">Reference baselines</div>
+        <h2>The public leaderboard</h2>
+        <p class="section__sub">
+          Click any column to sort. Rankings are decided on the hidden suite, not this one; a public score is a
+          development signal, and the public minus hidden generalization gap is published alongside it.
+        </p>
+      </div>
+
+      <div class="table-wrap reveal">
+        <table class="data" id="board">
+          <thead>
+            <tr>
+              <th class="txt sortable" data-key="name" scope="col">Agent <i class="fas fa-sort"></i></th>
+              <th class="sortable is-sorted" data-key="praxis" scope="col">PRAXIS <i class="fas fa-sort-down"></i></th>
+              <th class="sortable" data-key="control" scope="col">Control <i class="fas fa-sort"></i></th>
+              <th class="sortable" data-key="spatial" scope="col">Spatial <i class="fas fa-sort"></i></th>
+              <th class="sortable" data-key="memory" scope="col">Memory <i class="fas fa-sort"></i></th>
+              <th class="sortable" data-key="language" scope="col">Language <i class="fas fa-sort"></i></th>
+              <th class="sortable" data-key="planning" scope="col">Planning <i class="fas fa-sort"></i></th>
+              <th class="sortable" data-key="generalization" scope="col">General. <i class="fas fa-sort"></i></th>
+              <th class="sortable" data-key="recovery" scope="col">Recovery <i class="fas fa-sort"></i></th>
+              <th class="sortable" data-key="agentic" scope="col">Agentic <i class="fas fa-sort"></i></th>
+              <th class="sortable" data-key="safety" scope="col">Safety <i class="fas fa-sort"></i></th>
+              <th class="sortable" data-key="efficiency" scope="col">Efficiency <i class="fas fa-sort"></i></th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <p class="table-note">
+        The amber row is the privileged oracle: it reads ground-truth state, exists to certify that every family is
+        solvable, and is never ranked against learned policies. <strong>Sort by Safety</strong> to see why supporting
+        axes are diagnostics rather than ranking axes: <code>random</code> scores 0.993 on it, because an agent that
+        never goes anywhere never enters a keep-out zone.
+      </p>
+
+      <div class="callout">
+        <strong>On the SmolVLA row.</strong> A 450M pretrained vision-language-action model
+        (<code>lerobot/smolvla_base</code>), evaluated zero-shot through the plugin path, lands at 0.005,
+        indistinguishable from <code>random</code>. This is expected and we report it as such: the base checkpoint's
+        6-DoF real-robot action space and training domain do not match the planar action space and top-down rendered
+        scenes here, so its outputs carry no signal. The row is the reference untuned-VLA data point, and the
+        integration rather than the number is the deliverable. Any LeRobot or HuggingFace policy now plugs into the
+        full capability-vector evaluation without adding its dependencies to the benchmark.
+      </div>
+
+      <h3 style="margin-top:3rem;font-size:1.3rem">World-model track</h3>
+      <p class="section__sub" style="margin-bottom:1.3rem">
+        Scored on counterfactual state prediction and plan ranking, the two queries a planner actually poses.
+      </p>
+
+      <div class="table-wrap reveal">
+        <table class="data" style="min-width:520px">
+          <thead>
+            <tr>
+              <th class="txt" scope="col">Model</th>
+              <th scope="col">WM score</th>
+              <th scope="col">Ranking accuracy</th>
+              <th class="txt" scope="col">What it isolates</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="is-priv"><th scope="row">grasp_aware</th><td>1.00</td><td>1.00</td><td class="txt">Analytic ceiling: shows the probe is solvable</td></tr>
+            <tr><th scope="row">static</th><td>0.49</td><td class="zero">0.00</td><td class="txt">Effector kinematics only, no interaction model</td></tr>
+            <tr><th scope="row">no_motion</th><td>0.42</td><td class="zero">0.00</td><td class="txt">Copy-state floor</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="table-note">
+        Both shortcut baselines score a <strong>hard zero on ranking</strong> while retaining 0.42 to 0.49 on
+        prediction. That separation is the point of the track: a model can look accurate frame-to-frame and still be
+        useless for the only question a planner asks it, which is which of two candidate plans ends better.
+      </p>
+    </div>
+  </section>
+
+  <!-- ================= Evidence ================= -->
+  <section class="section section--soft" id="evidence">
+    <div class="wrap">
+      <div class="section__head reveal">
+        <div class="section__kicker">Does the vector earn its keep</div>
+        <h2>A case the scalar gets backwards</h2>
+        <p class="section__sub">
+          Three execution regimes of one architecture, one corpus and one feature set, on 50 paired seeds of
+          pick_place, displace_mid and frozen_effector. Retention is recovery divided by control.
+        </p>
+      </div>
+
+      <div class="chunk reveal" id="chunk"></div>
+
+      <div class="chunk__key">
+        <span><i style="background:var(--brand)"></i>control</span>
+        <span><i style="background:var(--accent)"></i>recovery on intervened twins</span>
+        <span>right column: retention</span>
+      </div>
+
+      <div class="callout" style="border-left-color:var(--accent)">
+        <strong>An aggregate success rate would rank chunk10 above per-step bc.</strong> Control stays high at 0.860
+        while recovery drops to 0.680 and retention falls from about 1.0 to 0.79: a ten-step blind window costs
+        perturbation response specifically. The capability vector shows what the aggregate trades away. Note also
+        that chunking is <em>not</em> monotonically harmful, which we report because it cuts against the simple
+        story: a trained five-step head improves both axes over per-step behaviour cloning
+        (<em>p</em>&nbsp;=&nbsp;0.0001 on intervened episodes).
+      </div>
+
+      <p class="table-note">
+        The action-repeat row is a methodological control, kept in the table to document a pitfall. Freezing a
+        per-step policy's action collapses control as much as recovery, because greedy deltas compound, so
+        action-repeat is not a valid surrogate for chunking. A chunking ablation has to train the multi-step head.
+      </p>
+
+      <h3 style="margin-top:3rem;font-size:1.3rem">Every family is certified solvable</h3>
+      <p class="section__sub" style="margin-bottom:1.3rem">
+        The privileged oracle's solvability certificate per backend, on seeds 0 to 2, base and intervened variants,
+        all 20 families, 72 episodes each.
+      </p>
+
+      <div class="table-wrap reveal">
+        <table class="data" style="min-width:560px">
+          <thead>
+            <tr>
+              <th class="txt" scope="col">Backend</th>
+              <th scope="col">Certification</th>
+              <th class="txt" scope="col">Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">mock (reference)</th><td>72 / 72</td><td class="txt">Normative episode semantics, deterministic, CPU-only</td></tr>
+            <tr><th scope="row">mujoco (suction)</th><td>72 / 72</td><td class="txt">Weld grasping, real gravity, friction and settling</td></tr>
+            <tr><th scope="row">mujoco-gripper</th><td>72 / 72</td><td class="txt">Contact grasping by friction alone, V-cradle fingers</td></tr>
+            <tr><th scope="row">mujoco-franka</th><td>70 / 72 &middot; 0.97</td><td class="txt">Franka Panda with sub-equator cradle grasp; clears the 0.95 aggregate gate</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="table-note">
+        Two backends, one semantics: a deterministic reference backend defines episode semantics and a MuJoCo 3
+        contact backend runs the same specs. Both share one rules module, so outcomes agree by construction rather
+        than by promise. <strong>The residual Franka failure is a real finding, not a bug</strong>: the largest smooth
+        held-out spheres, 38 mm diameter and up, slip during carry, and gripping them harder ejects them. That is a
+        genuine parallel-jaw limit, and surfacing hardware-relative unseen-object limits is what the Franka
+        embodiment is for.
+      </p>
+    </div>
+  </section>
+
+  <!-- ================= Limits ================= -->
+  <section class="section" id="limits">
+    <div class="wrap">
+      <div class="section__head reveal">
+        <div class="section__kicker">Boundaries</div>
+        <h2>What the instrument does not yet measure</h2>
+      </div>
+
+      <div class="contact">
+        <div class="contact-card reveal">
+          <h3><i class="fas fa-triangle-exclamation" aria-hidden="true" style="color:var(--accent)"></i> No frontier VLA has been fine-tuned on it</h3>
+          <p>
+            The one real VLA evaluated so far, SmolVLA, was run zero-shot and landed at the floor for reasons of
+            action-space mismatch rather than capability. A meaningful VLA row requires fine-tuning on a PRAXIS demo
+            corpus converted to LeRobot format. The corpus and the exporter exist; the fine-tuned row does not yet.
+          </p>
+        </div>
+
+        <div class="contact-card reveal">
+          <h3><i class="fas fa-triangle-exclamation" aria-hidden="true" style="color:var(--accent)"></i> Spatial and planning are zero everywhere</h3>
+          <p>
+            That is the intended finding, but it also means those two axes are currently unvalidated as
+            <em>discriminators</em>: no baseline separates on them, so we cannot yet show that the axes rank agents
+            sensibly rather than merely rejecting all of them. The first submission that moves either off zero is the
+            result the suite was built to surface.
+          </p>
+        </div>
+
+        <div class="contact-card reveal">
+          <h3><i class="fas fa-triangle-exclamation" aria-hidden="true" style="color:var(--accent)"></i> Simulation only, planar actions</h3>
+          <p>
+            The action space is planar <code>(dx, dy, grasp)</code>, and there is no real-robot cell. The Franka
+            backend brings a real arm model and real finger contact, which is what surfaced the sphere-slip limit,
+            but nothing here measures sim-to-real transfer of either a policy or the capability profile itself.
+          </p>
+        </div>
+
+        <div class="contact-card reveal">
+          <h3><i class="fas fa-triangle-exclamation" aria-hidden="true" style="color:var(--accent)"></i> Human demonstrations do not transfer yet</h3>
+          <p>
+            Behaviour cloning on the 7,750-demo human-teleop bridge corpus scores 0.000 on the procedural suite. The
+            corpus trains, but hindsight-labelled human trajectories carry no goal coordinates and no object
+            features, so the symbolic featuriser has nothing to condition on. Exploiting them requires pixel-space
+            policies, which is the motivating next step rather than a defect we are hiding.
+          </p>
+        </div>
+
+        <div class="contact-card reveal">
+          <h3><i class="fas fa-circle-info" aria-hidden="true" style="color:var(--brand)"></i> The hidden server is self-hostable by design</h3>
+          <p>
+            Rankings are decided on fresh instances drawn from a keyed PRF over the submission id and family, in a
+            seed band disjoint from the public development set, and each result is a tamper-evident sealed bundle.
+            The algorithm is public and only the operator's seed key is private, so nobody has to trust us to
+            reproduce the protocol.
+          </p>
+        </div>
+
+        <div class="contact-card reveal">
+          <h3><i class="fas fa-circle-info" aria-hidden="true" style="color:var(--brand)"></i> Anything plugs in</h3>
+          <p>
+            The agent contract is minimal and model-agnostic: a VLA, a diffusion policy, an RL agent, a classical
+            planner or a scripted controller are evaluated identically, and external world models plug into the
+            world-model track the same way. PRAXIS imports your factory and runs it, so you evaluate from inside your
+            own environment without adding its dependencies to the benchmark.
+          </p>
+        </div>
+      </div>
+
+      <div class="callout callout--brand">
+        <strong>Getting started takes one command.</strong> The reference backend is deterministic, dependency-light
+        (numpy and pyyaml) and CPU-only, so the full protocol runs anywhere in seconds:
+        <code>praxis demo --episodes 5</code> prints oracle against random with full capability vectors and a
+        p-value. <code>praxis eval --agent-module you:build_agent --config configs/eval/full_v1.yaml</code> is all it
+        takes to score your own policy.
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= BibTeX ================= -->
+  <section class="section section--soft" id="bibtex">
+    <div class="wrap narrow">
+      <div class="section__head reveal">
+        <div class="section__kicker">Citation</div>
+        <h2>BibTeX</h2>
+      </div>
+
+      <div class="table-wrap reveal" style="padding:1.3rem 1.5rem">
+<pre style="margin:0;font-family:var(--mono);font-size:0.82rem;line-height:1.7;color:var(--ink-2);overflow-x:auto">@misc{sarowar2027praxis,
+  title  = {A Capability-Factored Dataset and Benchmark for Robot Learning},
+  author = {Md Selim Sarowar and Sungho Kim},
+  year   = {2027},
+  note   = {In preparation},
+  url    = {https://physical-agi.github.io/PRAXIS/}
+}</pre>
+      </div>
+
+      <p class="table-note">
+        Placeholder entry, to be replaced with the proceedings entry once the paper is accepted. The software itself
+        carries a <code>CITATION.cff</code> in the repository.
+      </p>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="wrap footer__inner">
+    <div>
+      <strong style="color:var(--ink)">PRAXIS</strong> · Physical Reasoning, Adaptation, and eXecution In Situ<br>
+      <a href="https://s-elim.github.io/CVPI-Lab/">CVπ Lab</a> · Yeungnam University, South Korea · Apache-2.0
+    </div>
+    <div>
+      <a href="https://github.com/Physical-AGI/PRAXIS" target="_blank" rel="noopener"><i class="fab fa-github" aria-hidden="true"></i> Code</a>
+      &nbsp;·&nbsp;
+      <a href="https://s-elim.github.io/CVPI-Lab/#publications">More from the lab</a>
+    </div>
+  </div>
+</footer>
+
+<button class="to-top" id="to-top" type="button" aria-label="Back to top">
+  <i class="fas fa-arrow-up" aria-hidden="true"></i>
+</button>
+
+</body>
+</html>
